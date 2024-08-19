@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using Unity.VisualScripting;
 
 public class TetrisRandomizer : MonoBehaviour
 {
@@ -70,6 +71,16 @@ public class TetrisRandomizer : MonoBehaviour
     public GameObject SpawnNewTetromino()
     {
         GameObject tetromino = Instantiate(GetNextTetroMino(), transform.position, Quaternion.identity);
+        //int biggestNumber = int.MinValue;
+        //foreach (GameObject objects in tetromino.transform)
+        //{
+        //    if (objects.transform.position.y > biggestNumber)
+        //    {
+        //        biggestNumber = (int)objects.transform.position.y;
+        //    }
+        //}
+        //float originalY = tetromino.transform.position.y;
+        
         tetromino.transform.SetParent(blockHolder);
         return tetromino;
     }

@@ -1,5 +1,12 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
+public enum TileType
+{
+    normal,
+    obstacle,
+    oil
+}
 public class TetrisBlock : MonoBehaviour
 {
     public Vector3 rotationPoint;
@@ -9,6 +16,11 @@ public class TetrisBlock : MonoBehaviour
     BoardManager board;
     private Transform ghostTileHolderTransform;
     GameObject ghostTile;
+    private int toCheckHitPlayerAndOther = 0;
+
+    public TileType tileType;
+
+    private List<GameObject> obstacles = new List<GameObject>();
 
     void Start()
     {
@@ -17,6 +29,8 @@ public class TetrisBlock : MonoBehaviour
         _width = board.grid.GetLength(0);
         _height = board.grid.GetLength(1);
         //ghostTile = Instantiate(gameObject);
+        ChangeTileTypeBasedOnLevel(board.levelController.CurrentLevel());
+        SetupTile(tileType);
 
     }
     private void Update()
@@ -30,6 +44,75 @@ public class TetrisBlock : MonoBehaviour
 
     }
 
+    public void ChangeTileTypeBasedOnLevel(int level)
+    {
+        switch (level)
+        {
+            case 0:
+                tileType = TileType.normal;
+                break;
+            case 1:
+                tileType = TileType.obstacle;
+                break;
+            case 2:
+                tileType = TileType.oil;
+                break;
+        }
+    }
+
+    private void SetupTile(TileType type)
+    {
+        switch (type)
+        {
+            case TileType.normal:
+                break;
+            case TileType.obstacle:
+                SetupObstacleTile();
+                break;
+            case TileType.oil:
+                SetupOilTile();
+                break;
+        }
+    }
+    private void SetupObstacleTile()
+    {
+        foreach (Transform child in transform)
+        {
+            if (child.gameObject.name.Contains("Obstacle"))
+            {
+                obstacles.Add(child.gameObject);
+            }
+        }
+        RandomObstacleAppear();
+        Debug.Log(obstacles.Count);
+    }
+    private void RandomObstacleAppear()
+    {
+        float randomValue = Random.value;
+        // tỷ lệ có bẫy
+        if (randomValue < 0.45f)
+            return;
+        int numObjectsToActivate = Random.Range(1, 3);
+
+        for (int i = 0; i < numObjectsToActivate; i++)
+        {
+            int randomIndex = Random.Range(0, obstacles.Count);
+            // nếu đã tạo sẵn thì bỏ qua
+            if (obstacles[randomIndex].activeInHierarchy)
+            {
+                continue;
+            }
+
+            // Activate the chosen object
+            obstacles[randomIndex].SetActive(true);
+        }
+    }
+    private void SetupOilTile()
+    {
+
+    }
+
+    #region GRAVITY
     private void Gravity()
     {
         if (Input.GetKeyDown(KeyCode.RightShift))
@@ -56,21 +139,29 @@ public class TetrisBlock : MonoBehaviour
         {
             foreach (Transform children in transform)
             {
-                int roundedXDown = Mathf.RoundToInt(children.transform.position.x);
-                int roundedYDown = Mathf.RoundToInt(children.transform.position.y - 1);
-                if (roundedYDown >= 0)
+                if (children.gameObject.activeInHierarchy)
                 {
-                    if (board.grid[roundedXDown, roundedYDown] != null && board.grid[roundedXDown, roundedYDown] != board.player.transform)
+                    int roundedXDown = Mathf.RoundToInt(children.transform.position.x);
+                    int roundedYDown = Mathf.RoundToInt(children.transform.position.y - 1);
+                    if (roundedYDown >= 0)
                     {
-                        previousTime = Time.time;
+                        if (toCheckHitPlayerAndOther >= 2)
+                            break;
+                        if (board.grid[roundedXDown, roundedYDown] == board.player.transform)
+                        {
+                            previousTime = Time.time;
+                            toCheckHitPlayerAndOther++;
+                            Debug.Log("RIHGT");
+                            return;
+                        }
+                        //if (board.grid[roundedXDown, roundedYDown] != null)
+                        //{
+                        //    toCheckHitPlayerAndOther++;
+                        //    previousTime = Time.time;
 
-                        break;
-                    }
-                    if (board.grid[roundedXDown, roundedYDown] == board.player.transform)
-                    {
-                        previousTime = Time.time;
-                        Debug.Log("RIHGT");
-                        return;
+                        //    break;
+                        //}
+
                     }
                 }
             }
@@ -84,21 +175,43 @@ public class TetrisBlock : MonoBehaviour
             previousTime = Time.time;
         }
     }
-
-    private void ShiftDown()
+    void AddToGrid()
     {
-        base.transform.position -= new Vector3(0, -1, 0);
-        AddToGrid();
-        CheckForLine();
-        this.enabled = false;
-        if (board.canSpawn)
-        {
-           FindObjectOfType<TetrisRandomizer>().SpawnNewTetromino();
-        }
-        if (base.transform.hierarchyCount == 0)
-            Destroy(this.gameObject);
-    }
 
+        foreach (Transform children in transform)
+        {
+            if (children.gameObject.activeInHierarchy)
+            {
+                int roundedX = Mathf.RoundToInt(children.transform.position.x);
+                int roundedY = Mathf.RoundToInt(children.transform.position.y);
+                if (roundedY <= _height)
+                {
+                    if (roundedX < 0 || roundedX >= _width || roundedY < 0 || roundedY >= _height + 4)
+                    {
+                        board.canSpawn = false;
+                        Debug.Log("GAMEOVER");
+                        return;
+                    }
+                    if (board.grid[roundedX, roundedY] == null)
+                    {
+                        board.grid[roundedX, roundedY] = children;
+                    }
+                    else
+                    {
+                        Debug.Log("GameOVER");
+                        board.canSpawn = false;
+                        return;
+                    }
+
+                    board.grid[roundedX, roundedY] = children;
+                }
+               
+            }
+
+        }
+    }
+    #endregion
+    #region MOVEMENT
     private void Movement()
     {
         if (Input.GetKeyDown(KeyCode.LeftArrow))
@@ -127,34 +240,22 @@ public class TetrisBlock : MonoBehaviour
                 base.transform.RotateAround(base.transform.TransformPoint(rotationPoint), new Vector3(0, 0, 1), -90);
         }
     }
+    #endregion
 
-    void AddToGrid()
+    #region COLLISION
+    private void ShiftDown()
     {
-
-        foreach (Transform children in transform)
+        toCheckHitPlayerAndOther = 0;
+        base.transform.position -= new Vector3(0, -1, 0);
+        AddToGrid();
+        CheckForLine();
+        this.enabled = false;
+        if (board.canSpawn)
         {
-            int roundedX = Mathf.RoundToInt(children.transform.position.x);
-            int roundedY = Mathf.RoundToInt(children.transform.position.y);
-            if (roundedX < 0 || roundedX >= _width || roundedY < 0 || roundedY >= _height)
-            {
-                board.canSpawn = false;
-                Debug.Log("GAMEOVER");
-                return;
-            }
-            if (board.grid[roundedX, roundedY] == null)
-            {
-                board.grid[roundedX, roundedY] = children;
-            }
-            else
-            {
-                Debug.Log("GameOVER");
-                board.canSpawn = false;
-                return;
-            }
-
-            board.grid[roundedX, roundedY] = children;
-
+           FindObjectOfType<TetrisRandomizer>().SpawnNewTetromino();
         }
+        if (base.transform.hierarchyCount == 0)
+            Destroy(this.gameObject);
     }
 
     private void CheckForLine()
@@ -207,15 +308,20 @@ public class TetrisBlock : MonoBehaviour
     {
         foreach (Transform children in transform)
         {
-            int roundedX = Mathf.RoundToInt(children.transform.position.x);
-            int roundedY = Mathf.RoundToInt(children.transform.position.y);
+            if (children.gameObject.activeInHierarchy)
+            {
+                int roundedX = Mathf.RoundToInt(children.transform.position.x);
+                int roundedY = Mathf.RoundToInt(children.transform.position.y);
+                if (roundedY < _height)
+                {
+                    if (roundedX < 0 || roundedX >= _width || roundedY < 0 || roundedY >= _height + 4)
+                    return false;
 
-            if (roundedX < 0 || roundedX >= _width || roundedY < 0 || roundedY >= _height + 2)
-                return false;
-
-            if (board.grid[roundedX, roundedY])
-                return false;
-
+                if (board.grid[roundedX, roundedY])
+                    return false;
+                }
+                
+            }
         }
         return true;
     }
@@ -223,38 +329,24 @@ public class TetrisBlock : MonoBehaviour
     {
         foreach (Transform child in transform)
         {
-            int roundedX = Mathf.RoundToInt(child.transform.position.x);
-            int roundedY = Mathf.RoundToInt(child.transform.position.y);
-            for (int i = 0; i < _height; i++)
+            if (child.gameObject.activeInHierarchy)
             {
-                if (board.grid[roundedX, i] == board.player.transform)
+                int roundedX = Mathf.RoundToInt(child.transform.position.x);
+                int roundedY = Mathf.RoundToInt(child.transform.position.y);
+                for (int i = 0; i < _height; i++)
                 {
-                    Debug.Log("CO NGUOI CHOI");
-                    return true;
-                } 
+                    if (board.grid[roundedX, i] == board.player.transform)
+                    {
+                        Debug.Log("CO NGUOI CHOI");
+                        return true;
+                    }
+                }
             }
         }
         return false;
     }
-    private void SpawnGhostTile()
-    {
-        foreach (Transform child in ghostTileHolderTransform)
-        {
-            int roundedX = Mathf.RoundToInt(child.transform.position.x);
-            for (int i = 0; i < _height; i++)
-            {
-                if (board.grid[roundedX, i] == null && ValidMove())
-                {
-                    child.position += new Vector3(0, -1, 0);
-                }
-                else
-                {
-                    child.position -= new Vector3(0, -1, 0);
-                    Debug.Log("Dung lai");
-                }
-            }
-        }
-    }
-    
-    
+    #endregion
+
+
+
 }

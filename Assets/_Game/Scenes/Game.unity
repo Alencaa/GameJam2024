@@ -781,6 +781,7 @@ MonoBehaviour:
   jumpHeight: 3
   canJump: 1
   moveSpeed: 1
+  moveDirection: 0
   heightClimbed: 0
   groundCheckDistance: 0.3
   groundLayer:
@@ -1072,6 +1073,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1227249309}
   - component: {fileID: 1227249310}
+  - component: {fileID: 1227249311}
   m_Layer: 0
   m_Name: GameBoard
   m_TagString: Untagged
@@ -1112,14 +1114,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 60a051b944fc99a4098fdee9989ff287, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  levelController: {fileID: 0}
   player: {fileID: 1085116893}
   canSpawn: 1
   blockHolder: {fileID: 944963236}
   fallTime: 0.6
   medalAmount: 3
   medal: {fileID: 879437494824791702, guid: baccc9760bdc2cd42ad74f260b6f70c2, type: 3}
-  medalText: {fileID: 0}
   isWon: 0
+--- !u!114 &1227249311
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1227249308}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7cf45f3e951a3fb4a82f0e1eb1f1c2fe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  startingLevelIndex: 1
 --- !u!1 &1308230765
 GameObject:
   m_ObjectHideFlags: 0

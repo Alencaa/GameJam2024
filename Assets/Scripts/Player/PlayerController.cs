@@ -2,6 +2,13 @@ using DG.Tweening;
 using System.Collections;
 using UnityEngine;
 
+public enum MoveDirection
+{
+    Right,
+    Up,
+    Down,
+    Left,
+}
 public class PlayerController : MonoBehaviour
 {
     private BoardManager boardManager;
@@ -26,6 +33,7 @@ public class PlayerController : MonoBehaviour
     private bool isMoving = false;
     float movementDuration = 0.05f;
     public float moveSpeed = 1f;
+    public MoveDirection moveDirection;
 
     //Input buffer
     private Vector3 queuedInput = Vector3.zero;
@@ -49,6 +57,7 @@ public class PlayerController : MonoBehaviour
 
     private bool isWon = false;
 
+
     void Start()
     {
         spriteTransform = transform.Find("Animator");
@@ -68,23 +77,26 @@ public class PlayerController : MonoBehaviour
     }
     private void Update()
     {
-        //prevent spawning block when the player can jump to victory, ensuring the player has touch the ground
-        if (transform.position.y >= height - jumpHeight && canJump && !isWon)
+        if (!isWon)
         {
-            boardManager.canSpawn = false;
-            Debug.Log("WONNN");
-            boardManager.IsWonAnimation();
-            transform.DOMoveY(transform.position.y + 30, 2).SetEase(Ease.InOutBack);
-            rb.isKinematic = true;
-            isWon = true;
+            addToGrid(lastPosition);
+
+        }
+        //prevent spawning block when the player can jump to victory, ensuring the player has touch the ground
+        if (transform.position.y >= height - jumpHeight -3 && canJump && !isWon)
+        {
+            WIN();
+        }
+
+        if (Input.GetKeyDown(KeyCode.T))
+        {
+            WIN();
         }
         HorizontalMovement();
         JumpAndFallMovement();
         HandleInputBuffering();
 
         // Update the grid every frame, even when not moving
-        addToGrid(lastPosition);
-
 
         if (IsGrounded())
         {
@@ -100,6 +112,31 @@ public class PlayerController : MonoBehaviour
             animController.animator.Play("capyLanding", 0, 0);
             hasLanded = true;
         }
+
+    }
+
+    private void WIN()
+    {
+        boardManager.canSpawn = false;
+        Debug.Log("WONNN");
+        boardManager.IsWonAnimation();
+        transform.DOMoveY(transform.position.y + 30, 2).SetEase(Ease.InOutBack);
+        rb.isKinematic = true;
+        isWon = true;
+    }
+    public void GetToNextLevel()
+    {
+        int originalY = 0;
+        transform.position = new Vector2(transform.position.x, - 4);
+        transform.DOMoveY(originalY, 2).SetEase(Ease.InOutBack).OnComplete(() =>
+        {
+            boardManager.levelController.IncreaseLevel();
+            boardManager.canSpawn = true;
+            rb.isKinematic = false;
+            isWon = false;
+            GetComponent<BoxCollider2D>().enabled = true;
+            FindObjectOfType<TetrisRandomizer>().SpawnNewTetromino();
+        });
 
     }
 
@@ -244,11 +281,7 @@ public class PlayerController : MonoBehaviour
 
         int roundedX = Mathf.RoundToInt(transform.position.x);
         int roundedY = Mathf.RoundToInt(transform.position.y);
-        if (roundedX < 0 || roundedX >= width || roundedY < 0 || roundedY >= height)
-        {
-            Debug.Log("GAMEOVER");
-            return;
-        }
+
         // If the player is not moving, update the grid
         if (lastPosition == transform.position)
         {
@@ -275,14 +308,14 @@ public class PlayerController : MonoBehaviour
         if (roundedX < 0 || roundedX >= width || roundedY < 0 || roundedY >= height)
             return false;
 
-        if (boardManager.grid[roundedX, roundedY] != null)
+        if (boardManager.grid[roundedX, roundedY] != null && !boardManager.grid[roundedX, roundedY].gameObject.CompareTag("Obstacle"))
             return false;
         return true;
     }
     #endregion
 
     #region ACTUAL MOVEMENT LOGIC
-    IEnumerator MoveForward(Vector3 targetPosition, int jumpHeightIntended = 0)
+    IEnumerator MoveForward(Vector3 targetPosition)
     {
         isMoving = true;
         // Calculate the target position
@@ -303,6 +336,7 @@ public class PlayerController : MonoBehaviour
 
         // Ensure the player reaches the exact target position
         previousTime = Time.time;
+        moveDirection = DetermineMoveDirection(RoundedPos(lastPosition), RoundedPos(targetPosition));
         rb.MovePosition(targetPosition);
         isMoving = false;
     }
@@ -350,13 +384,62 @@ public class PlayerController : MonoBehaviour
             Destroy(collision.gameObject);
             boardManager.IncreaseMedalScore();
         }
+        if (collision.CompareTag("Obstacle"))
+        {
+            ChangePlayerMaterialColor();
+            switch (moveDirection)
+            {
+                case (MoveDirection.Left):
+                    StartCoroutine(MoveForward(DesiredHitPos(new Vector2(1, 0))));
+                    previousTime = Time.time;
+                    break;
+                case (MoveDirection.Right):
+                    StartCoroutine(MoveForward(DesiredHitPos(new Vector2(-1, 0))));
+                    previousTime = Time.time;
+                    break;
+                case (MoveDirection.Up):
+                    StartCoroutine(MoveForward(DesiredHitPos(new Vector2(0, -1))));
+                    previousTime = Time.time;
+                    break;
+                case (MoveDirection.Down):
+                    StartCoroutine(MoveForward(DesiredHitPos(new Vector2(0, 2))));
+                    previousTime = Time.time;
+                    break;
+            }
+        }
     }
-
+    private Vector2 DesiredHitPos(Vector2 targetPos)
+    {
+        Vector2 afterHitPos = new Vector2(transform.position.x + targetPos.x, transform.position.y + targetPos.y);
+        Vector2 rounded = RoundedPos(afterHitPos);
+        return rounded;
+    }
     private bool IsGrounded() => Physics2D.Raycast(groundCheck.position, Vector2.down, groundCheckDistance, groundLayer);
     private void OnDrawGizmos()
     {
         // Draw a debug ray to visualize the ground check distance
         Gizmos.color = Color.green;
         Gizmos.DrawLine(groundCheck.position, new Vector3(groundCheck.position.x, groundCheck.position.y - groundCheckDistance));
+    }
+
+    private MoveDirection DetermineMoveDirection(Vector2 lastPos, Vector2 afterMovePos)
+    {
+        if (afterMovePos.x - lastPos.x > 0 && afterMovePos.y == lastPos.y)
+        {
+            return MoveDirection.Right;
+        }
+        if (afterMovePos.x - lastPos.x < 0 && afterMovePos.y == lastPos.y)
+        {
+            return MoveDirection.Left;
+        }
+        if (afterMovePos.y - lastPos.y < 0 && afterMovePos.x == lastPos.x)
+        {
+            return MoveDirection.Down;
+        }
+        if (afterMovePos.y - lastPos.y > 0 && afterMovePos.x == lastPos.x)
+        {
+            return MoveDirection.Up;
+        }
+        return MoveDirection.Left;
     }
 }

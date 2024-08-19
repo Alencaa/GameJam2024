@@ -4,21 +4,24 @@ using UnityEngine;
 using TMPro;
 using DG.Tweening;
 
+
+
 public class BoardManager : MonoBehaviour
 {
     public static BoardManager instance;
-    private static int _height = 20;
+    [HideInInspector] public LevelController levelController;
+    [HideInInspector] public PlayerController player;
+
+
+    private static int _height = 23;
     private static int _width = 12;
     public Transform[,] grid = new Transform[_width, _height];
-    public PlayerController player;
     public bool canSpawn = true;
     public Transform blockHolder;
     public float fallTime = 0.6f;
     public int medalAmount;
     public GameObject medal;
     private Transform medalHolder;
-
-    public TextMeshProUGUI medalText;
 
     private int medalCollected;
 
@@ -30,6 +33,7 @@ public class BoardManager : MonoBehaviour
     }
     private void Start()
     {
+        levelController = GetComponent<LevelController>();
         anim = GetComponent<Animator>();
         medalHolder = transform.Find("MedalHolder");
         SpawnRandomMedal();
@@ -105,18 +109,31 @@ public class BoardManager : MonoBehaviour
     {
         player.GetComponent<BoxCollider2D>().enabled = false;
         canSpawn = false;
+
+
         float originalY = transform.position.y;
+        foreach (Transform child in blockHolder)
+        {
+            Destroy(child.gameObject);
+        }
+        for (int x = 0; x < _width; x++)
+        {
+            for (int y = 0; y < _height; y++)
+            {
+                grid[x, y] = null;
+            }
+        }
         transform.DOMoveY(originalY + 30, 1.5f).SetEase(Ease.InOutBack).OnComplete(() =>
         {
-            foreach (Transform child in blockHolder)
-            {
-                Destroy(child.gameObject);
-            }
+            
             // After the first movement, set the Y position to -30
             transform.position = new Vector3(transform.position.x, originalY - 30, transform.position.z);
 
             // Move back to the original Y position over 2 seconds with ease
-            transform.DOMoveY(originalY, 1.5f).SetEase(Ease.InOutBack);
+            transform.DOMoveY(originalY, 1.5f).SetEase(Ease.InOutBack).OnComplete(() =>
+            {
+                player.GetToNextLevel();
+            });
             
         });
     }
