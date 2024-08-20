@@ -207,6 +207,7 @@ public class TetrisBlock : MonoBehaviour
 
                         Debug.Log("GAMEOVER");
                         board.gameLost = true;
+                        UIManager.Instance.GetScreen<ReplayPopup>().Show();
                         return;
                     }
                     if (board.grid[roundedX, roundedY] == null)
@@ -221,6 +222,7 @@ public class TetrisBlock : MonoBehaviour
                         Debug.Log("GameOVER");
                         board.gameLost = true;
                         board.canSpawn = false;
+                        UIManager.Instance.GetScreen<ReplayPopup>().Show();
                         return;
                     }
 
