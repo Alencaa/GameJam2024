@@ -199,6 +199,7 @@ public class TetrisBlock : MonoBehaviour
                     if (roundedX < 0 || roundedX >= _width || roundedY < 0 || roundedY >= _height + 4)
                     {
                         board.canSpawn = false;
+                        // kết thúc game
                         Debug.Log("GAMEOVER");
                         return;
                     }
@@ -208,6 +209,8 @@ public class TetrisBlock : MonoBehaviour
                     }
                     else
                     {
+
+                        // kết thúc game
                         Debug.Log("GameOVER");
                         board.canSpawn = false;
                         return;
