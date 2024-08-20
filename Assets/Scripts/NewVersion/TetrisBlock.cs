@@ -142,6 +142,7 @@ public class TetrisBlock : MonoBehaviour
             {
                 ShiftDown();
                 ShakeCamera();
+                AudioController.instance.PlaySound(AudioController.instance.placeTile);
             }
         }
         if (Time.time - previousTime > (Input.GetKey(KeyCode.DownArrow) ? board.fallTime / 10 : board.fallTime))
@@ -175,11 +176,13 @@ public class TetrisBlock : MonoBehaviour
                 }
             }
             base.transform.position += new Vector3(0, -1, 0);
+            AudioController.instance.PlaySound(AudioController.instance.tileMove);
             //AddToGrid();
 
             if (!ValidMove())
             {
                 ShiftDown();
+                AudioController.instance.PlaySound(AudioController.instance.placeTile);
                 ShakeCamera();
             }
             previousTime = Time.time;
@@ -200,7 +203,10 @@ public class TetrisBlock : MonoBehaviour
                     {
                         board.canSpawn = false;
                         // kết thúc game
+                        AudioController.instance.PlaySound(AudioController.instance.gameOver);
+
                         Debug.Log("GAMEOVER");
+                        board.gameLost = true;
                         return;
                     }
                     if (board.grid[roundedX, roundedY] == null)
@@ -210,8 +216,10 @@ public class TetrisBlock : MonoBehaviour
                     else
                     {
 
+                        AudioController.instance.PlaySound(AudioController.instance.gameOver);
                         // kết thúc game
                         Debug.Log("GameOVER");
+                        board.gameLost = true;
                         board.canSpawn = false;
                         return;
                     }

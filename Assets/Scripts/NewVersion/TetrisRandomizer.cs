@@ -14,6 +14,7 @@ public class TetrisRandomizer : MonoBehaviour
 
     public Transform blockHolder;
     private BoardManager boardManager;
+    [SerializeField] private ParticleSystem fx;
 
     private void Start()
     {
@@ -71,6 +72,8 @@ public class TetrisRandomizer : MonoBehaviour
     public GameObject SpawnNewTetromino()
     {
         GameObject tetromino = Instantiate(GetNextTetroMino(), transform.position, Quaternion.identity);
+        fx.Play();
+        AudioController.instance.PlaySound(AudioController.instance.spawn);
         //int biggestNumber = int.MinValue;
         //foreach (GameObject objects in tetromino.transform)
         //{
@@ -80,7 +83,7 @@ public class TetrisRandomizer : MonoBehaviour
         //    }
         //}
         //float originalY = tetromino.transform.position.y;
-        
+
         tetromino.transform.SetParent(blockHolder);
         return tetromino;
     }

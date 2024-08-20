@@ -15,6 +15,8 @@ public class PlayerController : MonoBehaviour
     private Rigidbody2D rb;
     public ParticleSystem dust;
     public ParticleSystem star;
+    public ParticleSystem lightFx;
+    public ParticleSystem land;
 
     private int width;
     private int height;
@@ -47,11 +49,11 @@ public class PlayerController : MonoBehaviour
 
     public int heightClimbed = 0;
 
-    private PlayerAnimationController animController;
     private bool animPlayed = false;
     [SerializeField] private float groundCheckDistance;
     [SerializeField] private LayerMask groundLayer;
     [SerializeField] private Transform groundCheck;
+    [SerializeField] private PlayerAnimationController animController;
     public bool hasLanded;
 
     private int facingDir = 1;
@@ -60,17 +62,18 @@ public class PlayerController : MonoBehaviour
     private bool isWon = false;
     private bool isCheckingCollision = false;
 
+    private AudioController audioController;
     private void Awake()
     {
         spriteTransform = transform.Find("Animator");
-        animController = spriteTransform.GetComponent<PlayerAnimationController>();
     }
     void Start()
     {
         
         boardManager = BoardManager.instance;
         spriteRenderer = spriteTransform.gameObject.GetComponent<SpriteRenderer>();
-        rb = GetComponent<Rigidbody2D>(); 
+        rb = GetComponent<Rigidbody2D>();
+        audioController = AudioController.instance;
 
         width = boardManager.grid.GetLength(0);
         height = boardManager.grid.GetLength(1);
@@ -88,12 +91,12 @@ public class PlayerController : MonoBehaviour
             addToGrid(lastPosition);
 
         }
-        int posYWinThreshold = 18;
+        int posYWinThreshold = 17;
         //prevent spawning block when the player can jump to victory, ensuring the player has touch the ground
         if (transform.position.y >= posYWinThreshold && canJump && !isWon)
         {
             boardManager.canSpawn = false;
-            if (Input.GetKeyDown(KeyCode.Space))
+            if (Input.GetKeyDown(KeyCode.Space) && !boardManager.gameLost)
             {
                 WIN();
             }
@@ -121,6 +124,8 @@ public class PlayerController : MonoBehaviour
         if (IsGrounded() && !hasLanded)
         {
             animController.animator.Play("capyLanding", 0, 0);
+            audioController.PlaySound(audioController.landing);
+            land.Play();
             hasLanded = true;
         }
 
@@ -131,6 +136,7 @@ public class PlayerController : MonoBehaviour
         Debug.Log("WONNN");
         boardManager.IsWonAnimation();
         transform.DOMoveY(transform.position.y + 30, 2).SetEase(Ease.InOutBack);
+        audioController.PlaySound(audioController.passLevel);
         rb.isKinematic = true;
         isWon = true;
     }
@@ -166,6 +172,7 @@ public class PlayerController : MonoBehaviour
         {
             // Play dash animation
             animController.animator.Play("capyDash", 0 ,0);
+            audioController.PlaySound(audioController.move);
 
             // Move the object
             transform.DOMove(transform.position + Vector3.right * 1, 0.1f).SetEase(Ease.Linear);
@@ -249,6 +256,8 @@ public class PlayerController : MonoBehaviour
                 if (validMove(new Vector3(-1, 0, 0)))
                 {
                     animController.animator.Play("capyDash", 0, 0);
+                    audioController.PlaySound(audioController.move);
+                    
                     StartCoroutine(MoveForward(targetPosition));
                 }
                 if (!canJump)
@@ -267,6 +276,7 @@ public class PlayerController : MonoBehaviour
                 if (validMove(new Vector3(1, 0, 0)))
                 {
                     animController.animator.Play("capyDash", 0, 0);
+                    audioController.PlaySound(audioController.move);
                     StartCoroutine(MoveForward(targetPosition));
                 }
                 if (!canJump)
@@ -399,6 +409,7 @@ public class PlayerController : MonoBehaviour
     IEnumerator JumpUp()
     {
         animController.animator.Play("capyJump", 0, 0);
+        audioController.PlaySound(audioController.jump);
         while (heigthJumped < jumpHeight && validMove(new Vector3(0, 1, 0)))
         {
             canJump = false;
@@ -431,10 +442,11 @@ public class PlayerController : MonoBehaviour
     {
         if (collision.CompareTag("Medal"))
         {
-            Debug.Log(collision.transform.GetChild(0).name);
             Destroy(collision.gameObject);
             boardManager.IncreaseMedalScore();
             star.Play();
+            lightFx.Play();
+            audioController.PlaySound(audioController.coin);
             
         }
         if (collision.CompareTag("Obstacle"))
@@ -443,6 +455,7 @@ public class PlayerController : MonoBehaviour
             Vector2 roundedCollisionPos = RoundedPos(collision.transform.position);
             boardManager.grid[(int)roundedCollisionPos.x, (int)roundedCollisionPos.y] = null; // Set obstacle to null before knockback
             animController.animator.Play("capyHurt", 0, 0);
+            audioController.PlaySound(audioController.hurt);
             Vector2 knockbackDirection = Vector2.zero;
             if (lastPosition.x - roundedCollisionPos.x < 0 && lastPosition.y == roundedCollisionPos.y)
             {
