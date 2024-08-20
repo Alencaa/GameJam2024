@@ -13,6 +13,7 @@ public class PlayerController : MonoBehaviour
 {
     private BoardManager boardManager;
     private Rigidbody2D rb;
+    public ParticleSystem dust;
 
     private int width;
     private int height;
@@ -56,12 +57,16 @@ public class PlayerController : MonoBehaviour
     private bool facingRight = true;
 
     private bool isWon = false;
+    private bool isCheckingCollision = false;
 
-
-    void Start()
+    private void Awake()
     {
         spriteTransform = transform.Find("Animator");
         animController = spriteTransform.GetComponent<PlayerAnimationController>();
+    }
+    void Start()
+    {
+        
         boardManager = BoardManager.instance;
         spriteRenderer = spriteTransform.gameObject.GetComponent<SpriteRenderer>();
         rb = GetComponent<Rigidbody2D>(); 
@@ -82,10 +87,15 @@ public class PlayerController : MonoBehaviour
             addToGrid(lastPosition);
 
         }
+        int posYWinThreshold = 18;
         //prevent spawning block when the player can jump to victory, ensuring the player has touch the ground
-        if (transform.position.y >= height - jumpHeight -3 && canJump && !isWon)
+        if (transform.position.y >= posYWinThreshold && canJump && !isWon)
         {
-            WIN();
+            boardManager.canSpawn = false;
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                WIN();
+            }
         }
 
         if (Input.GetKeyDown(KeyCode.T))
@@ -117,7 +127,6 @@ public class PlayerController : MonoBehaviour
 
     private void WIN()
     {
-        boardManager.canSpawn = false;
         Debug.Log("WONNN");
         boardManager.IsWonAnimation();
         transform.DOMoveY(transform.position.y + 30, 2).SetEase(Ease.InOutBack);
@@ -239,7 +248,11 @@ public class PlayerController : MonoBehaviour
                 
         }
     }
-    public bool maxHorizontalMoveInAirAchieved() => horizontalMovedInAir > maxHorizontalMoveInAir;
+    public bool maxHorizontalMoveInAirAchieved() 
+    {
+        animController.animator.Play("capyHurt", 0, 0);
+        return horizontalMovedInAir > maxHorizontalMoveInAir;
+    }
     private void HandleInputBuffering()
     {
         if (Input.GetKeyDown(KeyCode.LeftArrow) && !isMoving && !maxHorizontalMoveInAirAchieved())
@@ -318,6 +331,10 @@ public class PlayerController : MonoBehaviour
     IEnumerator MoveForward(Vector3 targetPosition)
     {
         isMoving = true;
+        if (IsGrounded())
+        {
+            dust.Play();
+        }
         // Calculate the target position
         // Move the Rigidbody to the target position over one second
         float elapsedTime = 0f;
@@ -336,7 +353,10 @@ public class PlayerController : MonoBehaviour
 
         // Ensure the player reaches the exact target position
         previousTime = Time.time;
-        moveDirection = DetermineMoveDirection(RoundedPos(lastPosition), RoundedPos(targetPosition));
+        if (!isCheckingCollision)
+        {
+            moveDirection = DetermineMoveDirection(RoundedPos(lastPosition), RoundedPos(targetPosition));
+        }
         rb.MovePosition(targetPosition);
         isMoving = false;
     }
@@ -386,33 +406,111 @@ public class PlayerController : MonoBehaviour
         }
         if (collision.CompareTag("Obstacle"))
         {
-            ChangePlayerMaterialColor();
-            switch (moveDirection)
+            isCheckingCollision = true;
+            Vector2 roundedCollisionPos = RoundedPos(collision.transform.position);
+            boardManager.grid[(int)roundedCollisionPos.x, (int)roundedCollisionPos.y] = null; // Set obstacle to null before knockback
+            animController.animator.Play("capyHurt", 0, 0);
+            Vector2 knockbackDirection = Vector2.zero;
+            //switch (moveDirection)
+            //{
+            //    case (MoveDirection.Left):
+            //        knockbackDirection = new Vector2(roundedCollisionPos.x + 1, roundedCollisionPos.y); // Push right
+            //        break;
+            //    case (MoveDirection.Right):
+            //        knockbackDirection = new Vector2(roundedCollisionPos.x - 1, roundedCollisionPos.y);  // Push left
+            //        break;
+            //    case (MoveDirection.Up):
+            //        previousTime = Time.time; // Reset the fall timer
+            //        knockbackDirection = new Vector2(roundedCollisionPos.x, roundedCollisionPos.y - 1);  // Push left
+            //        break;
+            //    case (MoveDirection.Down):
+            //        previousTime = Time.time; // Reset the fall timer
+            //        knockbackDirection = new Vector2(roundedCollisionPos.x, roundedCollisionPos.y + 1);  // Push left
+            //        break;
+            //}
+            if (lastPosition.x - roundedCollisionPos.x < 0 && lastPosition.y == roundedCollisionPos.y)
             {
-                case (MoveDirection.Left):
-                    StartCoroutine(MoveForward(DesiredHitPos(new Vector2(1, 0))));
-                    previousTime = Time.time;
-                    break;
-                case (MoveDirection.Right):
-                    StartCoroutine(MoveForward(DesiredHitPos(new Vector2(-1, 0))));
-                    previousTime = Time.time;
-                    break;
-                case (MoveDirection.Up):
-                    StartCoroutine(MoveForward(DesiredHitPos(new Vector2(0, -1))));
-                    previousTime = Time.time;
-                    break;
-                case (MoveDirection.Down):
-                    StartCoroutine(MoveForward(DesiredHitPos(new Vector2(0, 2))));
-                    previousTime = Time.time;
-                    break;
+                //push right
+                Debug.Log(lastPosition.x + "Left");
+                knockbackDirection = new Vector2(roundedCollisionPos.x - 1, roundedCollisionPos.y);
+                previousTime = Time.time;
             }
-        }
+            if (lastPosition.x - roundedCollisionPos.x > 0 && lastPosition.y == roundedCollisionPos.y)
+            {
+                Debug.Log(lastPosition.x + "Right");
+                //push left
+                knockbackDirection = new Vector2(roundedCollisionPos.x + 1, roundedCollisionPos.y);
+                previousTime = Time.time;
+
+            }
+            if (lastPosition.x == roundedCollisionPos.x && lastPosition.y > roundedCollisionPos.y)
+            {
+                // Push up
+                Debug.Log(lastPosition.y + "UP");
+                knockbackDirection = new Vector2(roundedCollisionPos.x, roundedCollisionPos.y + 1);
+                previousTime = Time.time + 0.2f;
+            }
+            if (lastPosition.x == roundedCollisionPos.x && lastPosition.y < roundedCollisionPos.y)
+            {
+                //push down
+                Debug.Log(lastPosition.y + "DOWN");
+                knockbackDirection = new Vector2(roundedCollisionPos.x, roundedCollisionPos.y - 1);  // Push left
+                previousTime = Time.time;
+            }
+            // Get the desired knockback position
+            Vector2 knockbackPos = DesiredHitPos(knockbackDirection);
+                Debug.Log(knockbackPos);
+
+                Vector2 previousPlayerPos = RoundedPos(transform.position);
+
+                // Add a small delay before applying the knockback
+
+                StartCoroutine(ApplyKnockback(knockbackPos, collision.transform, roundedCollisionPos, previousPlayerPos));
+
+            }
+           
+            // Check if the knockback position is valid (not occupied by another obstacle)
+            //if (validMove(knockbackPos - (Vector2)transform.position))
+            //{
+            //    // Store the player's previous position
+                
+            //}
+            
+        
     }
+
+    private IEnumerator ApplyKnockback(Vector2 knockbackPos, Transform obstacle, Vector2 roundedCollisionPos, Vector2 previousPlayerPos)
+    {
+        yield return new WaitForSeconds(0.1f); // Adjust the delay as needed
+
+        
+        // Move the player to the knockback position
+        StartCoroutine(MoveForward(knockbackPos));
+        previousTime = Time.time; // Reset the fall timer
+        // Set the obstacle back to the grid after the player has moved
+        //if (knockbackPos.y - roundedCollisionPos.y > 1)
+        //{
+        //    Debug.Log("ISJUMP");
+        //    boardManager.grid[(int)roundedCollisionPos.x, (int)roundedCollisionPos.y + 1] = null;
+        //    Debug.Log(boardManager.grid[(int)roundedCollisionPos.x, (int)roundedCollisionPos.y + 1].name);
+        //}
+        boardManager.grid[(int)roundedCollisionPos.x, (int)roundedCollisionPos.y] = obstacle;
+
+        // Set the player's previous position to null
+        boardManager.grid[(int)previousPlayerPos.x, (int)previousPlayerPos.y] = null;
+
+
+
+    }
+
     private Vector2 DesiredHitPos(Vector2 targetPos)
     {
-        Vector2 afterHitPos = new Vector2(transform.position.x + targetPos.x, transform.position.y + targetPos.y);
-        Vector2 rounded = RoundedPos(afterHitPos);
-        return rounded;
+
+        // Ensure the knockback position is within the grid bounds
+        targetPos.x = Mathf.Clamp(targetPos.x, 0, width - 1);
+        targetPos.y = Mathf.Clamp(targetPos.y, 0, height - 1);
+
+        return targetPos;
     }
     private bool IsGrounded() => Physics2D.Raycast(groundCheck.position, Vector2.down, groundCheckDistance, groundLayer);
     private void OnDrawGizmos()

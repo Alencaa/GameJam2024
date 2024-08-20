@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using DG.Tweening;
+using System.Collections.Generic;
 using UnityEngine;
 
 public enum TileType
@@ -17,6 +18,12 @@ public class TetrisBlock : MonoBehaviour
     private Transform ghostTileHolderTransform;
     GameObject ghostTile;
     private int toCheckHitPlayerAndOther = 0;
+
+    //screenShake
+    public float shakeDuration = 0.1f;
+    public float shakeStrength = 0.3f;
+    public int shakeVibrato = 0;
+    public float shakeRandomness = 90f;
 
     public TileType tileType;
 
@@ -115,6 +122,7 @@ public class TetrisBlock : MonoBehaviour
     #region GRAVITY
     private void Gravity()
     {
+        if (board.isWon) return;
         if (Input.GetKeyDown(KeyCode.RightShift))
         {
             if (IsPlayerUnder())
@@ -133,6 +141,7 @@ public class TetrisBlock : MonoBehaviour
             if (!ValidMove())
             {
                 ShiftDown();
+                ShakeCamera();
             }
         }
         if (Time.time - previousTime > (Input.GetKey(KeyCode.DownArrow) ? board.fallTime / 10 : board.fallTime))
@@ -171,13 +180,14 @@ public class TetrisBlock : MonoBehaviour
             if (!ValidMove())
             {
                 ShiftDown();
+                ShakeCamera();
             }
             previousTime = Time.time;
         }
     }
     void AddToGrid()
     {
-
+        if (board.isWon) return;
         foreach (Transform children in transform)
         {
             if (children.gameObject.activeInHierarchy)
@@ -347,6 +357,15 @@ public class TetrisBlock : MonoBehaviour
     }
     #endregion
 
+    public void ShakeCamera()
+    {
+        Camera mainCamera = Camera.main;
 
+        if (mainCamera != null)
+        {
+            // Shake the camera using DOTween
+            mainCamera.DOShakePosition(shakeDuration, shakeStrength, shakeVibrato, shakeRandomness);
+        }
+    }
 
 }

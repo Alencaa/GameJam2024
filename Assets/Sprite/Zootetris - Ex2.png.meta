@@ -1,0 +1,316 @@
+fileFormatVersion: 2
+guid: ab8e61e92e4e3b74c8e69afc7ac7ab0b
+TextureImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 32
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 3
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: iPhone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Zootetris - Ex2_21
+      rect:
+        serializedVersion: 2
+        x: 352
+        y: 344
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 519501f073b20004d8f40376ad13aed6
+      internalID: 1356057053
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Zootetris - Ex2_22
+      rect:
+        serializedVersion: 2
+        x: 416
+        y: 344
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 06e31a63323624d438506907536fe031
+      internalID: -1065653855
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Zootetris - Ex2_23
+      rect:
+        serializedVersion: 2
+        x: 480
+        y: 344
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9601e06fb14aba04d959f15f7bc566cb
+      internalID: 240912600
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Zootetris - Ex2_51
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 24
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2a85a51579fe23e48a654d1a3b1af24a
+      internalID: -1209429154
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Zootetris - Ex2_57
+      rect:
+        serializedVersion: 2
+        x: 448
+        y: 24
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 77f2662ee32c9a246b6783281012ce8e
+      internalID: 1494669530
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    nameFileIdTable:
+      Zootetris - Ex2_0: 2029394219
+      Zootetris - Ex2_1: 677749490
+      Zootetris - Ex2_10: 2021570325
+      Zootetris - Ex2_11: 1653456042
+      Zootetris - Ex2_12: 1817794016
+      Zootetris - Ex2_13: 1242600889
+      Zootetris - Ex2_14: 645027427
+      Zootetris - Ex2_15: 995727169
+      Zootetris - Ex2_16: 1626848030
+      Zootetris - Ex2_17: -61873479
+      Zootetris - Ex2_18: -167034913
+      Zootetris - Ex2_19: 444069178
+      Zootetris - Ex2_2: 1990464317
+      Zootetris - Ex2_20: -980232793
+      Zootetris - Ex2_21: 1356057053
+      Zootetris - Ex2_22: -1065653855
+      Zootetris - Ex2_23: 240912600
+      Zootetris - Ex2_24: 2032932115
+      Zootetris - Ex2_25: -1026173303
+      Zootetris - Ex2_26: 1319107829
+      Zootetris - Ex2_27: 1773061296
+      Zootetris - Ex2_28: -999339723
+      Zootetris - Ex2_29: 187444896
+      Zootetris - Ex2_3: -355953951
+      Zootetris - Ex2_30: -816695343
+      Zootetris - Ex2_31: 1582497316
+      Zootetris - Ex2_32: -1781461941
+      Zootetris - Ex2_33: 78401183
+      Zootetris - Ex2_34: -1211192908
+      Zootetris - Ex2_35: 2018483301
+      Zootetris - Ex2_36: -1113037685
+      Zootetris - Ex2_37: -704386044
+      Zootetris - Ex2_38: 140404671
+      Zootetris - Ex2_39: -1900390384
+      Zootetris - Ex2_4: 1372580381
+      Zootetris - Ex2_40: 1359215020
+      Zootetris - Ex2_41: -215838840
+      Zootetris - Ex2_42: 1750626084
+      Zootetris - Ex2_43: -1270339550
+      Zootetris - Ex2_44: -2013863247
+      Zootetris - Ex2_45: -954181463
+      Zootetris - Ex2_46: 1920631535
+      Zootetris - Ex2_47: 1298119617
+      Zootetris - Ex2_48: -376357086
+      Zootetris - Ex2_49: -1714869397
+      Zootetris - Ex2_5: -431378388
+      Zootetris - Ex2_50: 2131201833
+      Zootetris - Ex2_51: -1209429154
+      Zootetris - Ex2_52: -1395636175
+      Zootetris - Ex2_53: -476496079
+      Zootetris - Ex2_54: -362427461
+      Zootetris - Ex2_55: -313510002
+      Zootetris - Ex2_56: 1920649334
+      Zootetris - Ex2_57: 1494669530
+      Zootetris - Ex2_6: -521884954
+      Zootetris - Ex2_7: -1657246103
+      Zootetris - Ex2_8: 2121841032
+      Zootetris - Ex2_9: -572372213
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

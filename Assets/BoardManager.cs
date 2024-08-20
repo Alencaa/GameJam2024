@@ -13,7 +13,7 @@ public class BoardManager : MonoBehaviour
     [HideInInspector] public PlayerController player;
 
 
-    private static int _height = 23;
+    private static int _height = 27;
     private static int _width = 12;
     public Transform[,] grid = new Transform[_width, _height];
     public bool canSpawn = true;
@@ -25,8 +25,9 @@ public class BoardManager : MonoBehaviour
 
     private int medalCollected;
 
-    private Animator anim;
     public bool isWon = false;
+
+    public Sprite[] fruitSprite;
     private void Awake()
     {
         instance = this;
@@ -34,7 +35,6 @@ public class BoardManager : MonoBehaviour
     private void Start()
     {
         levelController = GetComponent<LevelController>();
-        anim = GetComponent<Animator>();
         medalHolder = transform.Find("MedalHolder");
         SpawnRandomMedal();
     }
@@ -44,10 +44,12 @@ public class BoardManager : MonoBehaviour
         if (medalHolder.childCount == 0)
         {
             List<Vector2Int> gridPositions = RandomGridPositions();
-
+            int index = 0;
             foreach (Vector2Int position in gridPositions)
             {
                 Instantiate(medal, new Vector3(position.x, position.y, 0), Quaternion.identity, medalHolder);
+                medal.GetComponent<SpriteRenderer>().sprite = fruitSprite[index];
+                index++;
             }
         }
         else
@@ -76,7 +78,7 @@ public class BoardManager : MonoBehaviour
 
         while (pos.Count < medalAmount)
         {
-            Vector2Int randomPosition = new Vector2Int(Random.Range(1, _width), Random.Range(2, _height - 1));
+            Vector2Int randomPosition = new Vector2Int(Random.Range(1, _width), Random.Range(2, _height - 8));
 
             // Check if the new position is at least 'minSpacing' away from existing positions
             bool isValid = true;
@@ -114,7 +116,15 @@ public class BoardManager : MonoBehaviour
         float originalY = transform.position.y;
         foreach (Transform child in blockHolder)
         {
-            Destroy(child.gameObject);
+            child.gameObject.GetComponent<TetrisBlock>().enabled = false;
+            foreach (Transform children in child)
+            {
+                Vector3 targetPosition = new Vector3(Random.Range(-30 , 30), Random.Range(-50, -60), 0);
+
+                child.DOMove(targetPosition, 2)
+                    .SetEase(Ease.InBack)
+                    .OnComplete(() => Destroy(child.gameObject));
+            }
         }
         for (int x = 0; x < _width; x++)
         {
@@ -133,6 +143,7 @@ public class BoardManager : MonoBehaviour
             transform.DOMoveY(originalY, 1.5f).SetEase(Ease.InOutBack).OnComplete(() =>
             {
                 player.GetToNextLevel();
+                SpawnRandomMedal();
             });
             
         });
