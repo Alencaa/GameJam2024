@@ -5,7 +5,7 @@ using UnityEngine;
 public class LevelController : MonoBehaviour
 {
     public int startingLevelIndex = 0;
-    private int currentLevelIndex;
+    public int currentLevelIndex;
 
     private void Awake()
     {

@@ -15,7 +15,7 @@ public class UIController : MonoBehaviour
     }
     public void ChangeMedalText(int number)
     {
-        medalText.text = "Medal Collected: " + number;
+        medalText.text = number.ToString();
     }
     public void ChangeHeightClimbedText(int number)
     {

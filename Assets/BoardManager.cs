@@ -58,6 +58,14 @@ public class BoardManager : MonoBehaviour
             {
                 Destroy(child.gameObject);
             }
+            List<Vector2Int> gridPositions = RandomGridPositions();
+            int index = 0;
+            foreach (Vector2Int position in gridPositions)
+            {
+                Instantiate(medal, new Vector3(position.x, position.y, 0), Quaternion.identity, medalHolder);
+                medal.GetComponent<SpriteRenderer>().sprite = fruitSprite[index];
+                index++;
+            }
         }
         
     }
@@ -106,7 +114,27 @@ public class BoardManager : MonoBehaviour
         medalCollected++;
         UIController.instance.ChangeMedalText(medalCollected);
     }
+    private void ScatterRandom(Transform pos)
+    {
+        foreach (Transform child in pos)
+        {
+            child.gameObject.GetComponent<TetrisBlock>().enabled = false;
+            foreach (Transform children in child)
+            {
+                // Define the path for the curved drop
+                Vector3[] path = new Vector3[]
+                {
+                    children.position, // Starting position
+                    children.position + new Vector3(Random.Range(-10, 10), -10, 0),
+                    children.position + new Vector3(Random.Range(-10, 10), -30, 0)
+                };
 
+                children.DOPath(path, 2f)
+                    .SetEase(Ease.OutSine)
+                    .OnComplete(() => Destroy(children.gameObject));
+            }
+        }
+    }
     public void IsWonAnimation()
     {
         player.GetComponent<BoxCollider2D>().enabled = false;
@@ -114,17 +142,18 @@ public class BoardManager : MonoBehaviour
 
 
         float originalY = transform.position.y;
-        foreach (Transform child in blockHolder)
+        ScatterRandom(blockHolder);
+        foreach (Transform child in medalHolder)
         {
-            child.gameObject.GetComponent<TetrisBlock>().enabled = false;
-            foreach (Transform children in child)
-            {
-                Vector3 targetPosition = new Vector3(Random.Range(-30 , 30), Random.Range(-50, -60), 0);
-
-                child.DOMove(targetPosition, 2)
-                    .SetEase(Ease.InBack)
-                    .OnComplete(() => Destroy(child.gameObject));
-            }
+            Vector3[] path = new Vector3[]
+                {
+                    child.position, // Starting position
+                    child.position + new Vector3(Random.Range(-10, 10), -10, 0),
+                    child.position + new Vector3(Random.Range(-10, 10), -30, 0)
+                };
+            child.DOPath(path, 2f)
+                .SetEase(Ease.OutSine)
+                .OnComplete(() => Destroy(child.gameObject));
         }
         for (int x = 0; x < _width; x++)
         {
@@ -133,20 +162,30 @@ public class BoardManager : MonoBehaviour
                 grid[x, y] = null;
             }
         }
+        levelController.IncreaseLevel();
+        if (levelController.CurrentLevel() == 2)
+        {
+            player.GetToNextLevel();
+        }
+
         transform.DOMoveY(originalY + 30, 1.5f).SetEase(Ease.InOutBack).OnComplete(() =>
         {
-            
-            // After the first movement, set the Y position to -30
-            transform.position = new Vector3(transform.position.x, originalY - 30, transform.position.z);
-
-            // Move back to the original Y position over 2 seconds with ease
-            transform.DOMoveY(originalY, 1.5f).SetEase(Ease.InOutBack).OnComplete(() =>
+            if (levelController.CurrentLevel() < 2)
             {
-                player.GetToNextLevel();
-                SpawnRandomMedal();
-            });
-            
+                // After the first movement, set the Y position to -30
+                transform.position = new Vector3(transform.position.x, originalY - 30, transform.position.z);
+
+                // Move back to the original Y position over 2 seconds with ease
+                transform.DOMoveY(originalY, 1.5f).SetEase(Ease.InOutBack).OnComplete(() =>
+                {
+                    player.GetToNextLevel();
+                    SpawnRandomMedal();
+                });
+
+            }
+
         });
+        
     }
 
 }

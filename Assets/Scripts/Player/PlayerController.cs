@@ -14,6 +14,7 @@ public class PlayerController : MonoBehaviour
     private BoardManager boardManager;
     private Rigidbody2D rb;
     public ParticleSystem dust;
+    public ParticleSystem star;
 
     private int width;
     private int height;
@@ -136,17 +137,46 @@ public class PlayerController : MonoBehaviour
     public void GetToNextLevel()
     {
         int originalY = 0;
-        transform.position = new Vector2(transform.position.x, - 4);
+        transform.position = new Vector2(transform.position.x, -4);
         transform.DOMoveY(originalY, 2).SetEase(Ease.InOutBack).OnComplete(() =>
         {
-            boardManager.levelController.IncreaseLevel();
-            boardManager.canSpawn = true;
+
+            
             rb.isKinematic = false;
-            isWon = false;
             GetComponent<BoxCollider2D>().enabled = true;
-            FindObjectOfType<TetrisRandomizer>().SpawnNewTetromino();
+
+            if (boardManager.levelController.CurrentLevel() < 2)
+            {
+                boardManager.canSpawn = true;
+                FindObjectOfType<TetrisRandomizer>().SpawnNewTetromino();
+                isWon = false;
+            }
+            else
+            {
+                StartCoroutine(DashLoopSequence());
+            }
+
         });
 
+    }
+    private IEnumerator DashLoopSequence()
+    {
+        FlipController(-1);
+        for (int i = 0; i < 30; i++)
+        {
+            // Play dash animation
+            animController.animator.Play("capyDash", 0 ,0);
+
+            // Move the object
+            transform.DOMove(transform.position + Vector3.right * 1, 0.1f).SetEase(Ease.Linear);
+
+            // Wait for the dash duration
+            yield return new WaitForSeconds(0.1f);
+
+            // Wait for the delay
+            yield return new WaitForSeconds(0.05f);
+        }
+        // Reset position after the loop
     }
 
     #region FLIP
@@ -401,8 +431,11 @@ public class PlayerController : MonoBehaviour
     {
         if (collision.CompareTag("Medal"))
         {
+            Debug.Log(collision.transform.GetChild(0).name);
             Destroy(collision.gameObject);
             boardManager.IncreaseMedalScore();
+            star.Play();
+            
         }
         if (collision.CompareTag("Obstacle"))
         {
@@ -411,23 +444,6 @@ public class PlayerController : MonoBehaviour
             boardManager.grid[(int)roundedCollisionPos.x, (int)roundedCollisionPos.y] = null; // Set obstacle to null before knockback
             animController.animator.Play("capyHurt", 0, 0);
             Vector2 knockbackDirection = Vector2.zero;
-            //switch (moveDirection)
-            //{
-            //    case (MoveDirection.Left):
-            //        knockbackDirection = new Vector2(roundedCollisionPos.x + 1, roundedCollisionPos.y); // Push right
-            //        break;
-            //    case (MoveDirection.Right):
-            //        knockbackDirection = new Vector2(roundedCollisionPos.x - 1, roundedCollisionPos.y);  // Push left
-            //        break;
-            //    case (MoveDirection.Up):
-            //        previousTime = Time.time; // Reset the fall timer
-            //        knockbackDirection = new Vector2(roundedCollisionPos.x, roundedCollisionPos.y - 1);  // Push left
-            //        break;
-            //    case (MoveDirection.Down):
-            //        previousTime = Time.time; // Reset the fall timer
-            //        knockbackDirection = new Vector2(roundedCollisionPos.x, roundedCollisionPos.y + 1);  // Push left
-            //        break;
-            //}
             if (lastPosition.x - roundedCollisionPos.x < 0 && lastPosition.y == roundedCollisionPos.y)
             {
                 //push right
@@ -468,14 +484,6 @@ public class PlayerController : MonoBehaviour
                 StartCoroutine(ApplyKnockback(knockbackPos, collision.transform, roundedCollisionPos, previousPlayerPos));
 
             }
-           
-            // Check if the knockback position is valid (not occupied by another obstacle)
-            //if (validMove(knockbackPos - (Vector2)transform.position))
-            //{
-            //    // Store the player's previous position
-                
-            //}
-            
         
     }
 
@@ -484,16 +492,9 @@ public class PlayerController : MonoBehaviour
         yield return new WaitForSeconds(0.1f); // Adjust the delay as needed
 
         
-        // Move the player to the knockback position
         StartCoroutine(MoveForward(knockbackPos));
         previousTime = Time.time; // Reset the fall timer
-        // Set the obstacle back to the grid after the player has moved
-        //if (knockbackPos.y - roundedCollisionPos.y > 1)
-        //{
-        //    Debug.Log("ISJUMP");
-        //    boardManager.grid[(int)roundedCollisionPos.x, (int)roundedCollisionPos.y + 1] = null;
-        //    Debug.Log(boardManager.grid[(int)roundedCollisionPos.x, (int)roundedCollisionPos.y + 1].name);
-        //}
+        
         boardManager.grid[(int)roundedCollisionPos.x, (int)roundedCollisionPos.y] = obstacle;
 
         // Set the player's previous position to null
