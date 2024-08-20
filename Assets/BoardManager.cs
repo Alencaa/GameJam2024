@@ -16,6 +16,8 @@ public class BoardManager : MonoBehaviour
     private static int _height = 27;
     private static int _width = 12;
     public Transform[,] grid = new Transform[_width, _height];
+
+    public bool gameLost = false;
     public bool canSpawn = true;
     public Transform blockHolder;
     public float fallTime = 0.6f;
@@ -116,24 +118,23 @@ public class BoardManager : MonoBehaviour
     }
     private void ScatterRandom(Transform pos)
     {
-        foreach (Transform child in pos)
+
+        foreach (Transform children in pos)
         {
-            child.gameObject.GetComponent<TetrisBlock>().enabled = false;
-            foreach (Transform children in child)
+            children.gameObject.GetComponent<TetrisBlock>().enabled = false;
+            // Define the path for the curved drop
+            Vector3[] path = new Vector3[]
             {
-                // Define the path for the curved drop
-                Vector3[] path = new Vector3[]
-                {
                     children.position, // Starting position
                     children.position + new Vector3(Random.Range(-10, 10), -10, 0),
                     children.position + new Vector3(Random.Range(-10, 10), -30, 0)
-                };
+            };
 
-                children.DOPath(path, 2f)
-                    .SetEase(Ease.OutSine)
-                    .OnComplete(() => Destroy(children.gameObject));
-            }
+            children.DOPath(path, 2f)
+                .SetEase(Ease.OutSine)
+                .OnComplete(() => Destroy(children.gameObject));
         }
+
     }
     public void IsWonAnimation()
     {
